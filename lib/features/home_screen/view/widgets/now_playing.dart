@@ -15,17 +15,55 @@ class NowPlayingMovies extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: Text("Error getting data"));
+            return const Center(child: Text("Error getting data"));
           } else {
             return ListView.separated(
               separatorBuilder: (context, index) => const Divider(),
-              itemCount: snapshot.data!.totalResults!,
+              itemCount: snapshot.data!.results!.length,
               itemBuilder: (context, index) {
                 Result movie = snapshot.data!.results![index];
-                return ListTile(
-                  leading:
-                      Image.network(provider.imagePath + movie.posterPath!),
-                );
+                // return ListTile(
+                //   isThreeLine: true,
+                //   leading: Image.network(
+                //     provider.imagePath + movie.posterPath!,
+                //   ),
+                //   title: Text(movie.originalTitle!),
+                //   subtitle: Text(movie.overview!),
+                // );
+                return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.sizeOf(context).height / 4,
+                        width: MediaQuery.sizeOf(context).width / 3,
+                        child: Image.network(
+                          provider.imagePath + movie.posterPath!,
+                        ),
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 230,
+                            child: Text(
+                              movie.originalTitle!,
+                              style: const TextStyle(
+                                  fontSize: 25, fontWeight: FontWeight.bold),
+                              softWrap: true,
+                            ),
+                          ),
+                          // Text(movie.originalTitle!),
+                          SizedBox(
+                              width: 230,
+                              child: Text(
+                                movie.overview!,
+                                softWrap: true,
+                                maxLines: 5,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ],
+                      )
+                    ]);
               },
             );
           }
