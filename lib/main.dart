@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movie_flix/features/home_screen/controller/home_controller.dart';
+import 'package:movie_flix/features/movie_details/controller/movie_detail_controller.dart';
 import 'package:movie_flix/utils/app_constants.dart';
 import 'package:provider/provider.dart';
 
@@ -9,7 +10,10 @@ void main() {
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
       create: (context) => HomeController(),
-    )
+    ),
+    ChangeNotifierProvider(
+      create: (context) => MovieDetailsController(),
+    ),
   ], child: const MyApp()));
 }
 

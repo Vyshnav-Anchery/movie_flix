@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:movie_flix/features/home_screen/controller/home_controller.dart';
 import 'package:movie_flix/features/home_screen/model/playing_now_model.dart';
+import 'package:movie_flix/features/home_screen/view/widgets/movie_detail_card.dart';
 import 'package:provider/provider.dart';
 
 class NowPlayingMovies extends StatelessWidget {
@@ -8,67 +10,39 @@ class NowPlayingMovies extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HomeController>(builder: (context, provider, child) {
-      return FutureBuilder(
-        future: provider.getNowPlaying(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (!snapshot.hasData || snapshot.data == null) {
-            return const Center(child: Text("Error getting data"));
-          } else {
+    HomeController homeController = Provider.of(context, listen: false);
+    return FutureBuilder(
+      future: homeController.getNowPlaying(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (!snapshot.hasData || snapshot.data == null) {
+          return const Center(child: Text("Error getting data"));
+        } else {
+          return Consumer<HomeController>(builder: (context, provider, child) {
             return ListView.separated(
               separatorBuilder: (context, index) => const Divider(),
-              itemCount: snapshot.data!.results!.length,
+              itemCount: provider.nowPlaying.length,
               itemBuilder: (context, index) {
-                Result movie = snapshot.data!.results![index];
-                // return ListTile(
-                //   isThreeLine: true,
-                //   leading: Image.network(
-                //     provider.imagePath + movie.posterPath!,
-                //   ),
-                //   title: Text(movie.originalTitle!),
-                //   subtitle: Text(movie.overview!),
-                // );
-                return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      SizedBox(
-                        height: MediaQuery.sizeOf(context).height / 4,
-                        width: MediaQuery.sizeOf(context).width / 3,
-                        child: Image.network(
-                          provider.imagePath + movie.posterPath!,
-                        ),
+                Result movie = provider.nowPlaying[index];
+                return Slidable(
+                    startActionPane:
+                        ActionPane(motion: const ScrollMotion(), children: [
+                      SlidableAction(
+                        onPressed: (context) =>
+                            provider.deleteNowPlaying(movie),
+                        backgroundColor: const Color(0xFFFE4A49),
+                        foregroundColor: Colors.white,
+                        icon: Icons.delete,
+                        label: 'Delete',
                       ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 230,
-                            child: Text(
-                              movie.originalTitle!,
-                              style: const TextStyle(
-                                  fontSize: 25, fontWeight: FontWeight.bold),
-                              softWrap: true,
-                            ),
-                          ),
-                          // Text(movie.originalTitle!),
-                          SizedBox(
-                              width: 230,
-                              child: Text(
-                                movie.overview!,
-                                softWrap: true,
-                                maxLines: 5,
-                                overflow: TextOverflow.ellipsis,
-                              )),
-                        ],
-                      )
-                    ]);
+                    ]),
+                    child: MovieDetailTile(movie: movie));
               },
             );
-          }
-        },
-      );
-    });
+          });
+        }
+      },
+    );
   }
 }

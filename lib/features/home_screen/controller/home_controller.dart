@@ -17,12 +17,19 @@ class HomeController extends ChangeNotifier {
 
   String originalImagePath = "https://image.tmdb.org/t/p/original/";
 
-  Future<TopRatedModel?> getTopRatedMovies() async {
+  List<Result> nowPlaying = [];
+
+  List<TopResult> topRated = [];
+
+  Future<List<TopResult>?> getTopRatedMovies() async {
     try {
       final response = await http.get(Uri.parse(topRatedUrl));
       var data = jsonDecode(response.body.toString());
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return TopRatedModel.fromJson(data);
+        topRated.clear();
+        TopRatedModel topRatedMovies = TopRatedModel.fromJson(data);
+        topRated.addAll(topRatedMovies.results!.toList());
+        return topRated;
       } else {
         return null;
       }
@@ -32,12 +39,20 @@ class HomeController extends ChangeNotifier {
     }
   }
 
-  Future<NowPlayingModel?> getNowPlaying() async {
+  deleteNowPlaying(Result movie) {
+    nowPlaying.removeWhere((i) => i.id == movie.id);
+    notifyListeners();
+  }
+
+  Future<List<Result>?> getNowPlaying() async {
     try {
       final response = await http.get(Uri.parse(nowPlayingUrl));
       var data = jsonDecode(response.body.toString());
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return NowPlayingModel.fromJson(data);
+        nowPlaying.clear();
+        NowPlayingModel nowPlayingMovies = NowPlayingModel.fromJson(data);
+        nowPlaying.addAll(nowPlayingMovies.results!.toList());
+        return nowPlaying;
       } else {
         return null;
       }
@@ -45,5 +60,10 @@ class HomeController extends ChangeNotifier {
       log("error ${e.toString()}");
       return null;
     }
+  }
+
+  deleteTopRated(TopResult movie) {
+    topRated.removeWhere((element) => element.id == movie.id);
+    notifyListeners();
   }
 }
