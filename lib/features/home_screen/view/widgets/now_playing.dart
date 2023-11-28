@@ -56,7 +56,7 @@ class _NowPlayingMoviesState extends State<NowPlayingMovies> {
                   itemBuilder: (context, index) {
                     MovieDetailsDb? movies = nowPlayingMovieBox.getAt(index);
                     return Slidable(
-                        endActionPane:
+                        startActionPane:
                             ActionPane(motion: const ScrollMotion(), children: [
                           SlidableAction(
                             onPressed: (context) =>
