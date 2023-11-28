@@ -3,8 +3,12 @@ import 'dart:developer';
 
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:movie_flix/core/movie_details_db.dart';
 import 'package:movie_flix/features/home_screen/model/playing_now_model.dart';
 import 'package:movie_flix/features/home_screen/model/top_movies_model.dart';
+import 'package:movie_flix/utils/app_constants.dart';
+import 'package:movie_flix/utils/boxes.dart';
+import 'package:movie_flix/utils/pref_variable.dart';
 
 class HomeController extends ChangeNotifier {
   String nowPlayingUrl =
@@ -21,7 +25,7 @@ class HomeController extends ChangeNotifier {
 
   List<TopResult> topRated = [];
 
-  Future<List<TopResult>?> getTopRatedMovies() async {
+  getTopRatedMovies() async {
     try {
       final response = await http.get(Uri.parse(topRatedUrl));
       var data = jsonDecode(response.body.toString());
@@ -29,22 +33,32 @@ class HomeController extends ChangeNotifier {
         topRated.clear();
         TopRatedModel topRatedMovies = TopRatedModel.fromJson(data);
         topRated.addAll(topRatedMovies.results!.toList());
-        return topRated;
-      } else {
-        return null;
+        for (TopResult i in topRated) {
+          if (!topMovieBox.values.any((movie) => movie.id == i.id)) {
+            topMovieBox
+                .add(MovieDetailsDb(
+                    id: i.id!,
+                    title: i.originalTitle!,
+                    imageUrl: i.posterPath!,
+                    overView: i.overview!,
+                    popularity: i.voteAverage!,
+                    releaseDate: i.releaseDate!))
+                .then((value) =>
+                    pref.setBool(AppConstants.FETCHTOPMOVIEKEY, true));
+            log("Add");
+          }
+        }
       }
     } catch (e) {
       log("error ${e.toString()}");
-      return null;
     }
   }
 
-  deleteNowPlaying(Result movie) {
-    nowPlaying.removeWhere((i) => i.id == movie.id);
-    notifyListeners();
+  deleteNowPlaying(int index) {
+    nowPlayingMovieBox.deleteAt(index);
   }
 
-  Future<List<Result>?> getNowPlaying() async {
+  getNowPlaying() async {
     try {
       final response = await http.get(Uri.parse(nowPlayingUrl));
       var data = jsonDecode(response.body.toString());
@@ -52,18 +66,43 @@ class HomeController extends ChangeNotifier {
         nowPlaying.clear();
         NowPlayingModel nowPlayingMovies = NowPlayingModel.fromJson(data);
         nowPlaying.addAll(nowPlayingMovies.results!.toList());
-        return nowPlaying;
-      } else {
-        return null;
+        for (Result i in nowPlaying) {
+          if (!nowPlayingMovieBox.values.any((movie) => movie.id == i.id)) {
+            nowPlayingMovieBox
+                .add(MovieDetailsDb(
+                    id: i.id!,
+                    title: i.title!,
+                    imageUrl: i.posterPath!,
+                    overView: i.overview!,
+                    popularity: i.voteAverage!,
+                    releaseDate: i.releaseDate!))
+                .then((value) =>
+                    pref.setBool(AppConstants.FETCHNOWPLAYINGMOVIEKEY, true));
+          }
+        }
       }
     } catch (e) {
       log("error ${e.toString()}");
-      return null;
     }
   }
 
-  deleteTopRated(TopResult movie) {
-    topRated.removeWhere((element) => element.id == movie.id);
-    notifyListeners();
+  deleteTopRated(int index) {
+    topMovieBox.deleteAt(index);
+  }
+
+  List<MovieDetailsDb> getTopMovieSearchResult(String query) {
+    List<MovieDetailsDb> results = topMovieBox.values
+        .where(
+            (movie) => movie.title.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    return results;
+  }
+
+  List<MovieDetailsDb> getNowMovieSearchResult(String query) {
+    List<MovieDetailsDb> results = nowPlayingMovieBox.values
+        .where(
+            (movie) => movie.title.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    return results;
   }
 }

@@ -10,4 +10,9 @@ class AppConstants {
     colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
     useMaterial3: true,
   );
+
+  static String topMovieBoxName = "topmoviebox";
+  static String nowPlayingMovieBoxName = "nowplayingmoviebox";
+  static String FETCHTOPMOVIEKEY = "didfetchtop";
+  static String FETCHNOWPLAYINGMOVIEKEY = "didfetchnowplaying";
 }

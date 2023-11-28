@@ -1,72 +1,83 @@
-// import 'package:http/http.dart' as http;
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import 'package:movie_flix/features/home_screen/controller/home_controller.dart';
+import 'package:movie_flix/features/home_screen/view/widgets/movie_detail_card.dart';
+import 'package:provider/provider.dart';
+import '../../../../core/movie_details_db.dart';
 
-// class CustomSearchDelegate extends SearchDelegate {
-//   CustomSearchDelegate();
+class CustomSearchDelegate extends SearchDelegate {
+  BuildContext ctx;
 
-//   @override
-//   List<Widget> buildActions(BuildContext context) {
-//     return [
-//       IconButton(
-//         icon: const Icon(Icons.clear),
-//         onPressed: () {
-//           query = '';
-//         },
-//       ),
-//     ];
-//   }
+  CustomSearchDelegate({required this.ctx});
 
-//   @override
-//   Widget buildLeading(BuildContext context) {
-//     return IconButton(
-//       icon: const Icon(Icons.arrow_back),
-//       onPressed: () {
-//         Navigator.pop(context);
-//       },
-//     );
-//   }
+  late TabController tabController = DefaultTabController.of(ctx);
 
-//   @override
-//   Widget buildResults(BuildContext context) {
-//     HomeScreenController homeScreenController = Provider.of(context);
-//     return FutureBuilder(
-//       future: homeScreenController.getSearchResult(query),
-//       builder: (context, snapshot) {
-//         if (snapshot.connectionState == ConnectionState.waiting) {
-//           return const Center(
-//             child: CircularProgressIndicator(),
-//           );
-//         }
-//         if (!snapshot.hasData ||
-//             snapshot.data == null ||
-//             snapshot.data!.isEmpty) {
-//           return const Center(
-//               child: Text(
-//             "No results found",
-//             style: TextStyle(color: Colors.white),
-//           ));
-//         } else {
-//           final suggestionList = snapshot.data!;
-//           return ListView.builder(
-//             itemCount: suggestionList.length,
-//             itemBuilder: (context, index) {
-//               return ListTile(
-//                 subtitle: Text("data"),
-//                 title: Text(suggestionList[index]!.results![index].name!),
-//                 onTap: () {
-//                   Navigator.pop(context);
-//                 },
-//               );
-//             },
-//           );
-//         }
-//       },
-//     );
-//   }
+  @override
+  String get searchFieldLabel => tabController.index == 0
+      ? 'Search in Now Playing...'
+      : 'Search in Top Rated...';
 
-//   @override
-//   Widget buildSuggestions(BuildContext context) {
-//     return Container();
-//   }
-// }
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        Navigator.pop(context);
+      },
+    );
+  }
+ 
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    return ThemeData(
+        appBarTheme: const AppBarTheme(
+      iconTheme: IconThemeData(color: Colors.black),
+      titleTextStyle: TextStyle(fontSize: 20),
+      backgroundColor: Colors.orangeAccent,
+    ));
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    HomeController homeScreenController = Provider.of(context, listen: false);
+
+    List<MovieDetailsDb> results = tabController.index == 0
+        ? homeScreenController.getNowMovieSearchResult(query)
+        : homeScreenController.getTopMovieSearchResult(query);
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final MovieDetailsDb movie = results[index];
+        return MovieDetailTile(movie: movie);
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    HomeController homeScreenController = Provider.of(context, listen: false);
+    TabController tabController = DefaultTabController.of(ctx);
+
+    List<MovieDetailsDb> results = tabController.index == 0
+        ? homeScreenController.getNowMovieSearchResult(query)
+        : homeScreenController.getTopMovieSearchResult(query);
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final MovieDetailsDb movie = results[index];
+        return MovieDetailTile(movie: movie);
+      },
+    );
+  }
+}

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:movie_flix/core/movie_details_db.dart';
 import 'package:provider/provider.dart';
 
 import '../controller/movie_detail_controller.dart';
 
 class MovieDetails extends StatelessWidget {
-  final movie;
+  final MovieDetailsDb movie;
   const MovieDetails({super.key, required this.movie});
 
   @override
@@ -13,12 +14,13 @@ class MovieDetails extends StatelessWidget {
     MovieDetailsController movieDetailController =
         Provider.of(context, listen: false);
     var releaseDate = DateFormat('MMMM dd, yyyy').format(movie.releaseDate);
-    String avgVote = "${(movie.voteAverage * 10).round()} %";
+    String avgVote = "${(movie.popularity * 10).round()} %";
     return Scaffold(
       appBar: AppBar(
           leading: IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back_ios_new_rounded)),title: const Text("Back")),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded)),
+          title: const Text("Back")),
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
@@ -27,7 +29,7 @@ class MovieDetails extends StatelessWidget {
                 image: DecorationImage(
                     fit: BoxFit.cover,
                     image: NetworkImage(movieDetailController.originalimageUrl +
-                        movie.posterPath))),
+                        movie.imageUrl))),
           ),
           Positioned(
             bottom: MediaQuery.sizeOf(context).height / 10,
@@ -40,7 +42,7 @@ class MovieDetails extends StatelessWidget {
                 color: Colors.black,
                 child: Column(
                   children: [
-                    Text(movie.originalTitle,
+                    Text(movie.title,
                         style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -58,7 +60,7 @@ class MovieDetails extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    Text(movie.overview,
+                    Text(movie.overView,
                         style: const TextStyle(color: Colors.white)),
                   ],
                 ),
